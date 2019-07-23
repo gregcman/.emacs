@@ -1,39 +1,84 @@
+(setq inferior-lisp-program 
+  (cond  
+  ; (nil "/home/imac/Downloads/lisps/cmucl/bin/lisp")
+  ; (t "/home/imac/install/lisps/ccl/ccl/lx86cl64")
+  ; (t "clisp")
+ ;  (t "ecl")
+   (t "sbcl")))
+
+;; Tell emacs where is your personal elisp lib dir
+(add-to-list 'load-path "~/.emacs.d/lisp/")
+
 (load (expand-file-name "~/quicklisp/slime-helper.el"))
-  ;; Replace "sbcl" with the path to your implementation
-  (if t 
-  	(setq inferior-lisp-program "/usr/local/bin/sbcl")
-  	(setq inferior-lisp-program "/usr/local/bin/ccl"))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(default ((t (:family "DejaVu Sans Mono" :foundry "PfEd" :slant normal :weight normal :height 103 :width normal)))))
 
 (require 'package) ;; You might already have this line
 (add-to-list 'package-archives
-             '("melpa" . "https://melpa.org/packages/"))
+             '("melpa" . "https://melpa.org/packages/")
+	     t)
 (when (< emacs-major-version 24)
   ;; For important compatibility libraries like cl-lib
   (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
+
 (package-initialize) ;; You might already have this line
 
+(when (not package-archive-contents)
+  (package-refresh-contents))
+  
+;;;;Ruby start
+(require 'robe)
+(add-hook 'ruby-mode-hook 'robe-mode)
+(global-company-mode t)
+(push 'company-robe company-backends)
+(require 'flymake-ruby)
+(add-hook 'ruby-mode-hook 'flymake-ruby-load)
+;;;;Ruby end
+
+;;;;Python start
+
+(defvar myPackages
+  '(elpy
+    flycheck
+    py-autopep8))
+
+(mapc #'(lambda (package)
+	  (unless (package-installed-p package)
+	    (package-install package)))
+      myPackages)
+
+(elpy-enable)
+(setq elpy-rpc-python-command "python3")
+
+;; use flycheck not flymake with elpy
+(when (require 'flycheck nil t)
+  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  (add-hook 'elpy-mode-hook 'flycheck-mode))
+
+;; enable autopep8 formatting on save
+(require 'py-autopep8)
+(add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
+
+;; init.el ends here
+;;;;Python End
+
 (show-paren-mode 1)
-(add-to-list 'load-path "~/.emacs.d/emacs plugins/")
-(add-to-list 'custom-theme-load-path "~/.emacs.d/themes")
 
 ;(require 'rainbow-delimiters)
 ;(add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
 ;(add-hook 'slime-repl-mode-hook 'rainbow-delimiters-mode)
 
 ;(require 'rainbow-mode)
-;(add-hook 'pro-mode-hook 'rainbow-mode)
+;(add-hook 'progmode-hook 'rainbow-mode)
 ;(add-hook 'lisp-mode-hook 'rainbow-mode)
 
 (global-set-key (kbd "C-M-f") 'sexp-move-forward)  ; Ctrl+Alt+f
 (global-set-key (kbd "C-M-b") 'sexp-move-backward) ; Ctrl+Alt+b
-
 
 ;;;;;;;;;;;;;
 ;;;;;;;;;
@@ -47,20 +92,21 @@
 (add-hook 'lisp-interaction-mode-hook #'enable-paredit-mode)
 (add-hook 'scheme-mode-hook           #'enable-paredit-mode)
 
-;(add-hook 'slime-repl-mode-hook (lambda () (paredit-mode +1)))
+(add-hook 'slime-repl-mode-hook (lambda () (paredit-mode +1)))
 
 ;;autocomplete basic configuration
 (ac-config-default)
 
 (desktop-save-mode 1)
 
+;(require 'i3-integration)
+;(i3-one-window-per-frame-mode-on)
+
 ;;slime autocomplete mode
 (add-hook 'slime-mode-hook 'set-up-slime-ac)
 (add-hook 'slime-repl-mode-hook 'set-up-slime-ac)
 (eval-after-load "auto-complete"
   '(add-to-list 'ac-modes 'slime-repl-mode))
-
-(require 'visual-indentation-mode)
 
 ;; Stop SLIME's REPL from grabbing DEL,
 ;; which is annoying when backspacing over a '('
@@ -89,7 +135,13 @@
 ;; Using local-set-key in a mode-hook is a better idea.
 ;;(global-set-key (kbd "RET") 'electrify-return-if-match)
 
-
+(setq backup-directory-alist '(("." . "~/.emacs.d/backup"))
+  backup-by-copying t    ; Don't delink hardlinks
+  version-control t      ; Use version numbers on backups
+  delete-old-versions t  ; Automatically delete excess backups
+  kept-new-versions 20   ; how many of the newest versions to keep
+  kept-old-versions 5    ; and how many of the old
+  )
 
 
 
@@ -111,13 +163,13 @@
  '(cua-normal-cursor-color "#657b83")
  '(cua-overwrite-cursor-color "#b58900")
  '(cua-read-only-cursor-color "#859900")
- '(custom-enabled-themes (quote (wombat)))
+ '(custom-enabled-themes (quote (misterioso)))
  '(custom-safe-themes
    (quote
     ("8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" "d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" "a8245b7cc985a0610d71f9852e9f2767ad1b852c2bdea6f4aadc12cce9c4d6d0" "6c62b1cd715d26eb5aa53843ed9a54fc2b0d7c5e0f5118d4efafa13d7715c56e" "f3d6a49e3f4491373028eda655231ec371d79d6d2a628f08d5aa38739340540b" default)))
  '(fci-rule-character-color "#202020")
  '(fci-rule-color "#3E3D31")
- '(fringe-mode 0 nil (fringe))
+ '(fringe-mode (quote (1 . 1)) nil (fringe))
  '(highlight-changes-colors (quote ("#FD5FF0" "#AE81FF")))
  '(highlight-symbol-colors
    (--map
@@ -142,6 +194,8 @@
    (quote
     ("#fdf6e3" "#fdf6e3" "#fdf6e3" "#fdf6e3" "#fdf6e3" "#fdf6e3" "#fdf6e3" "#fdf6e3")))
  '(inhibit-startup-screen t)
+ '(initial-buffer-choice t)
+ '(initial-scratch-message nil)
  '(magit-diff-use-overlays nil)
  '(main-line-color1 "#1E1E1E")
  '(main-line-color2 "#111111")
@@ -149,18 +203,24 @@
  '(nrepl-message-colors
    (quote
     ("#CC9393" "#DFAF8F" "#F0DFAF" "#7F9F7F" "#BFEBBF" "#93E0E3" "#94BFF3" "#DC8CC3")))
+ '(package-selected-packages
+   (quote
+    (ac-inf-ruby py-autopep8 flycheck elpy rainbow-mode rainbow-delimiters paredit ac-slime)))
  '(pos-tip-background-color "#A6E22E")
  '(pos-tip-foreground-color "#272822")
  '(powerline-color1 "#1E1E1E")
  '(powerline-color2 "#111111")
+ '(python-shell-interpreter "python3")
  '(save-place t nil (saveplace))
  '(scroll-bar-mode nil)
  '(show-paren-mode t)
+ '(show-trailing-whitespace nil)
  '(size-indication-mode t)
  '(smartrep-mode-line-active-bg (solarized-color-blend "#859900" "#eee8d5" 0.2))
  '(term-default-bg-color "#fdf6e3")
  '(term-default-fg-color "#657b83")
  '(tool-bar-mode nil)
+ '(tooltip-mode nil)
  '(vc-annotate-background nil)
  '(vc-annotate-color-map
    (quote
@@ -189,3 +249,4 @@
    ["#eee8d5" "#dc322f" "#859900" "#b58900" "#268bd2" "#d33682" "#2aa198" "#073642"])
  '(xterm-color-names-bright
    ["#fdf6e3" "#cb4b16" "#93a1a1" "#839496" "#657b83" "#6c71c4" "#586e75" "#002b36"]))
+(put 'narrow-to-region 'disabled nil)
